@@ -60,10 +60,10 @@ endif()
 
 # ---[ cuda settings
 set(HAVE_CUDA 1)
-list(APPEND CUDA_NVCC_FLAGS "-gencode;arch=compute_30,code=sm_30;-gencode;arch=compute_35,code=sm_35;-gencode;arch=compute_50,code=sm_50;")
-if(CUDA_VERSION GREATER 7.5)
-    list(APPEND CUDA_NVCC_FLAGS "-gencode;arch=compute_61,code=sm_61")
-endif()
+CUDA_SELECT_NVCC_ARCH_FLAGS(ARCH_FLAGS Auto)
+LIST(APPEND CUDA_NVCC_FLAGS ${ARCH_FLAGS}) #add automatically flag for your current NVidia card
+#list(APPEND CUDA_NVCC_FLAGS "-gencode;arch=compute_86,code=sm_86") #or set it manuall
+message(STATUS "CUDA Version: ${CUDA_VERSION}, CUDA_NVCC_FLAGS: ${CUDA_NVCC_FLAGS}")
 if(UNIX OR APPLE)
   list(APPEND CUDA_NVCC_FLAGS "-Xcompiler;-fPIC;")
 endif()
@@ -71,7 +71,7 @@ endif()
 warnings_disable(CMAKE_CXX_FLAGS /wd4985)
 set(OPT_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/deps/Opt/examples/external/mLib/include ${CMAKE_CURRENT_SOURCE_DIR}/deps/Opt/examples/shared/ ${CMAKE_CURRENT_SOURCE_DIR}/deps/Opt/API/release/include)
 set(OPT_LIBRARIES ${CMAKE_CURRENT_SOURCE_DIR}/deps/Opt/API/release/lib/libOptDev.a)
-set(TERRA_LIBRARIES ${CMAKE_CURRENT_SOURCE_DIR}/deps/terra/lib/libterra.a)
+set(TERRA_LIBRARIES ${CMAKE_CURRENT_SOURCE_DIR}/deps/terra/lib/libterra_s.a)
 
 add_subdirectory(kfusion)
 add_subdirectory(apps)

@@ -8,10 +8,10 @@ The code is based on this [KinectFusion implemenation](https://github.com/Nerei/
 
 ## Building instructions:
 
-### Ubuntu 16.04
+### Ubuntu 22.04
 Clone dynamicfusion and dependencies. 
 ```
-git clone https://github.com/mihaibujanca/dynamicfusion --recursive
+git clone https://github.com/remmel/dynamicfusion --recursive
 ```
 
 Install NVIDIA drivers.
@@ -74,15 +74,48 @@ Optionals:
 * [GTest](https://github.com/google/googletest) 
 * [OpenNI]( http://pointclouds.org/downloads/windows.html)
 
-[Download the dataset](http://lgdv.cs.fau.de/uploads/publications/data/innmann2016deform/umbrella_data.zip).\
-Create a `data` folder inside the project root directory. \
-Unzip the archive into `data` and remove any files that are not .png. \
-Inside `data`, create directories `color` and `depth`, and move color and depth frames to their corresponding folders.
+[Download the dataset](https://cloud9.cs.fau.de/index.php/s/46qcNZSNePHx08A) and check `download_data.sh`
+- Create a `data` folder inside the project root directory.
+- Unzip the archive into `data` and remove any files that are not .png.
+- Inside `data`, create directories `color` and `depth`, and move color and depth frames to their corresponding folders.
 
 To use with .oni captures or straight from a kinect device, use `./build/bin/dynamicfusion_kinect <path-to-oni>` or `./build/bin/dynamicfusion_kinect <device_id>` 
 
 ---
 Note: currently, the frame rate is too low (10s / frame) to be able to cope with live inputs, so it is advisable that you capture your input first.
+
+## Troubleshooting
+
+### Building
+#### curl / tiff / glog
+`User
+/usr/bin/ld: /lib/libgdal.so.30: undefined reference to `curl_easy_getinfo@CURL_OPENSSL_4'`
+anaconda interfers with your system library. Desactivate/remove anaconda (`mv ~/anaconda3 ~/anaconda3_tmp`)
+
+### Running
+#### Wrong compute capability
+
+`KinFu2 error: no kernel image is available for execution on the device dynamicfusion/kfusion/src/cuda/tsdf_volume.cu:40`
+
+In means that you compiled for another compute capability which does not match your NVidia graphic card.
+For example set it to 8.6 if you have an RTX3060 `list(APPEND CUDA_NVCC_FLAGS "-gencode;arch=compute_86,code=sm_86")` in `CMakeLists.txt`
+
+#### KinFu2 error: invalid configuration argument
+
+```shell
+build/bin/dynamicfusion data/umbrella
+KinFu2 error: invalid configuration argument	dynamicfusion/kfusion/src/cuda/tsdf_volume.cu:829
+```
+Was not able to fix it, give up here, multiples people complain about it in github:
+- https://github.com/mihaibujanca/dynamicfusion/issues/53
+- https://github.com/mihaibujanca/dynamicfusion/issues/28
+- https://github.com/mihaibujanca/dynamicfusion/issues/70
+
+why `size_t kfusion::device::extractCloud` returns 0 ? (in `tsdf_volume.cu`)
+
+(Thus in fusion::cuda::TsdfVolume::fetchNormals normals.ptr() is null because cloud.size() is 0)
+Note that KinFu2 is coming from [kinfu_remake](https://github.com/Nerei/kinfu_remake)) and used in a lot of [others repositories](https://github.com/search?q=tsdf_volume.cu&type=code)
+
 
 ## References
 [DynamicFusion project page](http://grail.cs.washington.edu/projects/dynamicfusion/)
